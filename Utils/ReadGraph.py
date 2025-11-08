@@ -146,7 +146,7 @@ class BrandGraph:
 
 if __name__ == "__main__":
     # Create the graph
-    graph = BrandGraph(FileName="Graphs/testGraph.gexf")
+    graph = BrandGraph(FileName="Test Files/testGraph.gexf")
 
     # Print Stats
     print(graph.get_graph_stats())
