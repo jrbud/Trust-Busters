@@ -2,27 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Company Ownership Explorer</title>
+  <title>Trust Busters</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    input, button { padding: 8px; font-size: 1em; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2em;
+      text-align: center;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+
+    h1 {
+      margin-bottom: 0.2em;
+      color: #ffffff;
+    }
+
+    .search-bar {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 1em;
+      position: relative;
+    }
+
+    .input-wrapper {
+      position: relative;
+      width: 300px;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 1em;
+      background-color: #333;
+      color: #f0f0f0;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
+
+    ul.suggestions {
+      position: absolute;
+      text-align: left;
+      top: 100%;
+      left: 0;
+      right: 0;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #444;
+      background: #1e1e1e;
+      z-index: 10;
+      max-height: 200px;
+      overflow-y: auto;
+      border-radius: 4px;
+    }
+
+    ul.suggestions li {
+      padding: 8px;
+      cursor: pointer;
+      color: #f0f0f0;
+    }
+
+    ul.suggestions li:hover {
+      background-color: #333;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 80%;
+      margin: 1em auto;
+      border: 1px solid #444;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+    }
+
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2a2a2a;
+    }
+
+    #results {
+      margin-top: 2em;
+    }
+
+    .section-heading {
+      text-align: left;
+      margin-left: 10%;
+      margin-top: 2em;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
-  <h1>Company Ownership Explorer</h1>
-  <input type="text" id="companyInput" placeholder="Enter company name (e.g., BrandX)" />
-  <button onclick="fetchCompanyData()">Search</button>
+  <h1>TRUST BUSTING!!!!!</h1>
+  <p>Enter the company, brand, or product you want to BUST!</p>
+
+  <div class="search-bar">
+    <div class="input-wrapper">
+      <input type="text" id="companyInput" placeholder="Enter company name" oninput="getSuggestions()" />
+      <ul id="suggestions" class="suggestions"></ul>
+    </div>
+    <button onclick="searchCompany()">Search</button>
+  </div>
 
   <div id="results"></div>
 
   <script>
-    async function fetchCompanyData() {
-      const company = document.getElementById('companyInput').value;
-      const response = await fetch(`http://localhost:5000/api/company?name=${encodeURIComponent(company)}`);
-      const data = await response.json();
+    async function getSuggestions() {
+      const input = document.getElementById('companyInput').value;
+      if (input.length < 1) {
+        document.getElementById('suggestions').innerHTML = '';
+        return;
+      }
+      const res = await fetch(`/api/suggest?q=${encodeURIComponent(input)}`);
+      const suggestions = await res.json();
+      const list = suggestions.map(name => `<li onclick="selectSuggestion('${name}')">${name}</li>`).join('');
+      document.getElementById('suggestions').innerHTML = list;
+    }
+
+    function selectSuggestion(name) {
+      document.getElementById('companyInput').value = name;
+      document.getElementById('suggestions').innerHTML = '';
+      searchCompany();
+    }
+
+    async function searchCompany() {
+      const name = document.getElementById('companyInput').value;
+      const res = await fetch(`/api/company?name=${encodeURIComponent(name)}`);
+      const data = await res.json();
 
       if (data.error) {
         document.getElementById('results').innerHTML = `<p style="color:red;">${data.error}</p>`;
@@ -31,21 +162,12 @@
 
       let html = `
         <h2>Results for "${data.company}"</h2>
-        <table>
-          <tr><th>Parent Company</th><td>${data.parent}</td></tr>
-        </table>
-        <h3>Child Companies</h3>
-        <table>
-          <tr><th>Name</th></tr>
-          ${data.children.map(child => `<tr><td>${child}</td></tr>`).join('')}
-        </table>
-        <h3>Sister Brands</h3>
-        <table>
-          <tr><th>Name</th></tr>
-          ${data.sisters.map(sister => `<tr><td>${sister}</td></tr>`).join('')}
-        </table>
+        <p><strong>Parent company:</strong> ${data.parent}</p>
+        <h3 class="section-heading">Child Companies</h3>
+        <table><tr><th>Name</th></tr>${data.children.map(c => `<tr><td>${c}</td></tr>`).join('')}</table>
+        <h3 class="section-heading">Sister Brands</h3>
+        <table><tr><th>Name</th></tr>${data.sisters.map(s => `<tr><td>${s}</td></tr>`).join('')}</table>
       `;
-
       document.getElementById('results').innerHTML = html;
     }
   </script>
