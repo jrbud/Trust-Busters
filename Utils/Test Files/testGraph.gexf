@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<gexf xmlns="http://gexf.net/1.3" version="1.3" xmlns:viz="http://gexf.net/1.3/viz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gexf.net/1.3 http://gexf.net/1.3/gexf.xsd">
+  <meta lastmodifieddate="2025-11-08">
+    <creator>Gephi 0.10.1</creator>
+    <title></title>
+    <description></description>
+  </meta>
+  <graph defaultedgetype="directed" mode="static">
+    <attributes class="node" mode="static">
+      <attribute id="type" title="type" type="string"/>
+    </attributes>
+    <nodes>
+      <node id="10" label="PepsiCo">
+        <attvalues>
+          <attvalue for="type" value="Company"/>
+        </attvalues>
+        <viz:size value="15.0"/>
+        <viz:position x="-171.34149" y="-4.796232"/>
+        <viz:color r="255" g="184" b="88"/>
+      </node>
+      <node id="3" label="Doritos">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="-152.65851" y="-19.994564"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="5" label="Lay's">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="-153.54196" y="11.407415"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="7" label="Mountain Dew">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="-186.04663" y="13.00245"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="9" label="Pepsi">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="-185.02835" y="-23.41015"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="6" label="Mondelez">
+        <attvalues>
+          <attvalue for="type" value="Company"/>
+        </attvalues>
+        <viz:size value="12.5"/>
+        <viz:position x="111.511826" y="-153.68704"/>
+        <viz:color r="255" g="184" b="88"/>
+      </node>
+      <node id="8" label="Oreo">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="130.90369" y="-148.05261"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="1" label="Cadbury">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="99.26165" y="-136.65187"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="13" label="Trident">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="100.02938" y="-170.32442"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="11" label="Procter &amp; Gamble">
+        <attvalues>
+          <attvalue for="type" value="Company"/>
+        </attvalues>
+        <viz:size value="12.5"/>
+        <viz:position x="102.72138" y="159.69643"/>
+        <viz:color r="255" g="184" b="88"/>
+      </node>
+      <node id="12" label="Tide">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="122.40661" y="155.15326"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="2" label="Crest">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="90.332" y="175.65868"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+      <node id="4" label="Gillette">
+        <attvalues>
+          <attvalue for="type" value="Brand"/>
+        </attvalues>
+        <viz:size value="5.0"/>
+        <viz:position x="91.45041" y="141.99815"/>
+        <viz:color r="125" g="151" b="255"/>
+      </node>
+    </nodes>
+    <edges>
+      <edge id="2107" source="10" target="3"/>
+      <edge id="2108" source="10" target="5"/>
+      <edge id="2109" source="10" target="7"/>
+      <edge id="2110" source="10" target="9"/>
+      <edge id="2111" source="6" target="8"/>
+      <edge id="2112" source="6" target="1"/>
+      <edge id="2113" source="6" target="13"/>
+      <edge id="2114" source="11" target="12"/>
+      <edge id="2115" source="11" target="2"/>
+      <edge id="2116" source="11" target="4"/>
+    </edges>
+  </graph>
+</gexf>
