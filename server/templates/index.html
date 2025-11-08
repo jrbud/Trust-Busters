@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Company Ownership Explorer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    input, button { padding: 8px; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Company Ownership Explorer</h1>
+  <input type="text" id="companyInput" placeholder="Enter company name (e.g., BrandX)" />
+  <button onclick="fetchCompanyData()">Search</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function fetchCompanyData() {
+      const company = document.getElementById('companyInput').value;
+      const response = await fetch(`http://localhost:5000/api/company?name=${encodeURIComponent(company)}`);
+      const data = await response.json();
+
+      if (data.error) {
+        document.getElementById('results').innerHTML = `<p style="color:red;">${data.error}</p>`;
+        return;
+      }
+
+      let html = `
+        <h2>Results for "${data.company}"</h2>
+        <table>
+          <tr><th>Parent Company</th><td>${data.parent}</td></tr>
+        </table>
+        <h3>Child Companies</h3>
+        <table>
+          <tr><th>Name</th></tr>
+          ${data.children.map(child => `<tr><td>${child}</td></tr>`).join('')}
+        </table>
+        <h3>Sister Brands</h3>
+        <table>
+          <tr><th>Name</th></tr>
+          ${data.sisters.map(sister => `<tr><td>${sister}</td></tr>`).join('')}
+        </table>
+      `;
+
+      document.getElementById('results').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
