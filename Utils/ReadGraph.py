@@ -114,7 +114,6 @@ class BrandGraph:
         return result
 
 
-
     def export_graph(self, filename: str = "brand_graph.gexf"):
         # Export graph to GEXF to put back into Gephi
         nx.write_gexf(self.graph, filename)
