@@ -216,11 +216,36 @@ Please be factual, cite specific examples when possible, and present both positi
 
         company, is_brand = result_tuple
 
+        # Get all brands owned by this company
+        brand_labels = self.company_to_brands.get(company, [])
+
+        # Build the report
+        result = "=" * 70 + "\n"
+        result += f"💰 ETHICAL MONEY TRAIL REPORT\n"
+        result += "=" * 70 + "\n\n"
+
+        result += f"📦 You searched for: {brand_or_company}\n"
+        company, is_brand = result_tuple
         if is_brand:
-            return f"🏢 {brand_or_company} → {company}"
+            result += f"🏷️  Type: Brand\n"
+            result += f"🏢 Parent Company: {company}\n"
+
+            # Show sibling brands (other brands owned by same company)
+            siblings = [b for b in brand_labels if b.lower() != brand_or_company.lower()]
+            if siblings:
+                result += f"\n👥 Sibling Brands ({len(siblings)}):\n"
+                result += f"   When you buy {brand_or_company}, you're supporting the same company as:\n"
+                for sibling in sorted(siblings):
+                    result += f"   • {sibling}\n"
         else:
+            result += f"🏷️  Type: Company\n"
+            result += f"🏢 Company Name: {company}\n"
             brands = self.company_to_brands.get(company, [])
-            return f"🏢 {company} owns {len(brands)} brands: {', '.join(sorted(brands))}"
+            result += f"🏢 {company} owns {len(brands)} brands:\n"
+            for brand in sorted(brands):
+                result += f"   • {brand}\n"
+
+        return result
 
 
 
@@ -265,16 +290,16 @@ Procter & Gamble,Gillette"""
             api_key=API_KEY
         )
 
-        print("=" * 70)
-        print("🌍 ETHICAL CONSUMERISM ANALYZER")
-        print("=" * 70)
-        print("Discover where your money really goes when you buy from brands.\n")
-
-        # Example analysis
-        print("Example 1: Analyzing Doritos (a brand)")
-        print("-" * 70)
-        report = analyzer.analyze_brand("Doritos")
-        print(report)
+        # print("=" * 70)
+        # print("🌍 ETHICAL CONSUMERISM ANALYZER")
+        # print("=" * 70)
+        # print("Discover where your money really goes when you buy from brands.\n")
+        #
+        # # Example analysis
+        # print("Example 1: Analyzing Doritos (a brand)")
+        # print("-" * 70)
+        #report = analyzer.analyze_brand("Doritos")
+        #print(report)
 
         print("\n\n")
 
@@ -282,35 +307,10 @@ Procter & Gamble,Gillette"""
         print("-" * 70)
         print(analyzer.quick_lookup("Pepsi"))
 
+        print(analyzer.quick_lookup("PepsiCo"))
+
         print("\n\n")
 
-        # Interactive mode
-        print("=" * 70)
-        print("INTERACTIVE MODE")
-        print("=" * 70)
-        print("Commands:")
-        print("  - Enter any brand or company name for full ethical analysis")
-        print("  - Type 'quick [brand]' for quick parent company lookup")
-        print("  - Type 'list' to see all companies in database")
-        print("  - Type 'quit' to exit\n")
-
-        while True:
-            user_input = input("🔍 Search: ").strip()
-
-            if user_input.lower() == 'quit':
-                print("\nThank you for being a conscious consumer! 🌱")
-                break
-
-            if user_input.lower() == 'list':
-                print(analyzer.list_all_companies())
-            elif user_input.lower().startswith('quick '):
-                brand = user_input[6:].strip()
-                print(analyzer.quick_lookup(brand))
-            elif user_input:
-                print("\n")
-                print(analyzer.analyze_brand(user_input))
-
-            print("\n")
 
     except Exception as e:
         print(f"Error: {e}")
