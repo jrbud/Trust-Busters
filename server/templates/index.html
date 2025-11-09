@@ -4,9 +4,27 @@
   <meta charset="UTF-8" />
   <title>Trust Busters</title>
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   <style>
+    @font-face {
+      font-family: 'Monopoly';
+      src: url('/static/monopoly.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Copperplate Gothic';
+      src: url('/static/copperplate.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body, h1, h2, h3, p, input, button, label {
+      font-family: 'Monopoly', sans-serif;
+    }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 2em;
       text-align: center;
       background-color: #BFDBAE;
@@ -14,8 +32,15 @@
     }
 
     h1 {
-      margin-bottom: 0.2em;
-      color: #000000;
+      font-size: 7em;
+      color: #ffffff;
+      background-color: #C70000;
+      border: 4px solid #ffffff;
+      padding: 0.1em 0.2em;
+      margin: 0.2em auto;
+      line-height: 1;
+      display: inline-block;
+      text-align: center;
     }
 
     .search-bar {
@@ -36,7 +61,7 @@
       font-size: 1em;
       width: 100%;
       box-sizing: border-box;
-      background-color: #D7BAAA;
+      background-color: #b9e3f7;
       color: #000000;
       border: 3px solid #444;
     }
@@ -56,7 +81,6 @@
 
     label {
       font-size: 0.95em;
-      color: #000000;
     }
 
     ul.suggestions {
@@ -105,7 +129,6 @@
       outline: 4px solid #ffffff;
       width: 180px;
       height: 270px;
-      font-family: Arial, sans-serif;
       box-shadow: 0 2px 8px rgba(63, 69, 81, 0.16);
       display: flex;
       flex-direction: column;
@@ -127,6 +150,7 @@
       padding: 0.5em;
       color: #000;
       text-transform: uppercase;
+      font-family: 'Copperplate Gothic', 'Copperplate', serif;
     }
 
     .deed-card p {
@@ -194,8 +218,6 @@
       const name = document.getElementById('companyInput').value;
       const useEthics = document.getElementById('ethicsCheckbox').checked;
 
-      console.log("Ethical analysis selected:", useEthics);
-
       const res = await fetch(`/api/company?name=${encodeURIComponent(name)}`);
       const data = await res.json();
 
@@ -204,15 +226,28 @@
         return;
       }
 
-      let html = `<h2>Results for "${data.company}"</h2>`;
+      let html = `<h2>Results for ${data.company.toUpperCase()}</h2>`;
 
       const brands = data.type === "company" ? data.children : data.sisters;
       const owner = data.type === "company" ? data.company : data.parent;
 
-      html += `
-        <p><strong>${data.company}</strong> is a <strong>${data.type}</strong> ${data.type === "brand"
+      html += `<p><strong>${data.company}</strong> is a <strong>${data.type}</strong> ${
+        data.type === "brand"
           ? `owned by <strong>${data.parent}</strong> with ${brands.length} sister brand${brands.length !== 1 ? 's' : ''}`
-          : `that owns ${brands.length} brand${brands.length !== 1 ? 's' : ''}`}.</p>
+          : `that owns ${brands.length} brand${brands.length !== 1 ? 's' : ''}`
+      }.</p>`;
+
+      if (useEthics) {
+        try {
+          const ethicsRes = await fetch(`/ai-check?name=${encodeURIComponent(data.parent)}`);
+          const ethicsText = await ethicsRes.text();
+          html += `<p><em>${ethicsText}</em></p>`;
+        } catch (error) {
+          html += `<p><em>AI ethical analysis failed to load.</em></p>`;
+        }
+      }
+
+      html += `
         <div class="deed-grid">
           ${brands.map(b => {
             const bgColor = getRandomColor();
@@ -225,15 +260,6 @@
           }).join('')}
         </div>
       `;
-              if (useEthics) {
-    try {
-      const ethicsRes = await fetch(`/ai-check?name=${encodeURIComponent(data.parent)}`);
-      const ethicsText = await ethicsRes.text();
-      html += `<p><em>${ethicsText}</em></p>`;
-    } catch (error) {
-      html += `<p><em>AI ethical analysis failed to load.</em></p>`;
-    }
-  }
 
       document.getElementById('results').innerHTML = html;
     }
