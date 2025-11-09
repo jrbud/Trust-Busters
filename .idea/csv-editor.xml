@@ -17,6 +17,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/webscraping/brand_products2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/webscraping/company_brands_scrubbed2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

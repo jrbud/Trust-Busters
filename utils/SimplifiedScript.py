@@ -7,13 +7,17 @@ from PIL import Image
 
 
 class BrandAnalysis:
-    def __init__(self, companyBrandFile: str, APIKEY: Optional[str] = None):
-
-        # Load the brand-company mapping from CSV
-        self.brand2Company = {}  # {brand: company}
-        self.company2brands = {}  # {company: [brands]}
+    def __init__(self, companyBrandFile: str, brandProductFile: Optional[str]=None, APIKEY: Optional[str] = None):
+        # Load the mappings from CSV
+        self.brand2Company = {}
+        self.company2brands = {}
+        self.brand2Products = {}
 
         self.loadCSV(companyBrandFile)
+
+        if brandProductFile:
+            print(f"Loading product data from {brandProductFile}...")
+            self.loadProductsCSV(brandProductFile)
 
         # Set up Google AI for future query stuff
         if APIKEY is not None:
@@ -55,7 +59,27 @@ class BrandAnalysis:
                 if brand not in self.company2brands[re.sub(r'["\']', '', company)]:
                     self.company2brands[re.sub(r'["\']', '', company)].append(re.sub(r'["\']', '', brand))
 
+    def loadProductsCSV(self, filename: str):
+        """Load brand-product relationships from CSV"""
+        with open(filename, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
 
+            if 'Brand' not in reader.fieldnames or 'Product' not in reader.fieldnames:
+                raise ValueError("Products CSV must have 'Brand' and 'Product' columns")
+
+            for row in reader:
+                brand = row['Brand'].strip()
+                product = row['Product'].strip()
+
+                if not brand or not product:
+                    continue
+
+                # Add mappings to Dicts !!
+                # B2P
+                if brand not in self.brand2Products:
+                    self.brand2Products[brand] = []
+                if product not in self.brand2Products[brand]:
+                    self.brand2Products[brand].append(product)
 
     def getParentCompany(self, brandOrCompany: str) -> Optional[tuple]:
         # Gets parent company when given an input, used for lookups
@@ -64,12 +88,28 @@ class BrandAnalysis:
 
         # Check if it's a brand
         if searchTerm in self.brand2Company:
-            return (self.brand2Company[searchTerm], True)
+            return (self.brand2Company[searchTerm], True, brandOrCompany)
+
+        for brand, products in self.brand2Products.items():
+            if any(searchTerm in product.lower() for product in products):
+                matchingProducts = [p for p in products if searchTerm in p.lower()]
+                if len(matchingProducts) == 1:
+
+                    # Found a unique product, return its brand's company
+                    company = self.brand2Company.get(brand.lower())
+                    if company:
+                        return (company, True, brand)
+                elif len(matchingProducts) > 1:
+                    print(f"Multiple products found matching '{brandOrCompany}':")
+                    for prod in matchingProducts:
+                        print(f"  - {prod} (Brand: {brand})")
+                    print("Please be more specific.\n")
+                    return None
 
         # Check if it's a company
         for company in self.company2brands.keys():
             if company.lower() == searchTerm:
-                return (company, False)
+                return (company, False, company)
 
         # Partial match to get other possible options, useful for autofill/suggesstions
         brandMatches = [brand for brand in self.brand2Company.keys() if searchTerm in brand]
@@ -107,12 +147,11 @@ class BrandAnalysis:
         if not resultTup:
             return f"Could not find '{brandOrCompany}' in the database."
 
-        company, isBrand = resultTup
+        company, isBrand, matchedName = resultTup
 
         # Get all brands owned by this company
         brandLabels = self.company2brands.get(company, [])
 
-        company, isBrand = resultTup
 
         # Brand
         if isBrand:
@@ -246,12 +285,13 @@ class BrandAnalysis:
 # Example usage
 if __name__ == "__main__":
     # Initialize the analyzer
-    API_KEY = "AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E"  # Replace with your actual key
-    CSV_FILE = "Test Files/webscrape.csv"  # Path to your CSV file
+    API_KEY = "AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E"
+    CSVFILE = "../webscraping/company_brands_scrubbed2.csv"
+    ProductCSVFILE = "../webscraping/brand_products2.csv"
 
 
     try:
-        analyzer = BrandAnalysis(companyBrandFile=CSV_FILE, APIKEY=API_KEY )
+        analyzer = BrandAnalysis(companyBrandFile=CSVFILE,brandProductFile=ProductCSVFILE, APIKEY=API_KEY )
 
         print("\n\n")
 
@@ -261,13 +301,13 @@ if __name__ == "__main__":
 
         print("Quick lookup")
         print("-" * 70)
-        print(analyzer.quickLookup("PepsiCo"))
+        print(analyzer.quickLookup("Diet Coke"))
 
         print("\n\n")
 
         print(analyzer.getStatistics())
 
-        print(analyzer.brandFromImage("Test Files/oreo.jpeg"))
+
 
 
     except Exception as e:
