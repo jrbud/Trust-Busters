@@ -1,3 +1,5 @@
+import re
+
 import google.generativeai as genai
 import csv
 import os
@@ -52,13 +54,13 @@ class BrandAnalysis:
                     continue
 
                 # Store brand -> company mapping
-                self.brand_to_company[brand.lower()] = company
+                self.brand_to_company[re.sub(r'["\']', '', brand.lower())] = company
 
                 # Store company -> brands mapping
                 if company not in self.company_to_brands:
-                    self.company_to_brands[company] = []
-                if brand not in self.company_to_brands[company]:
-                    self.company_to_brands[company].append(brand)
+                    self.company_to_brands[re.sub(r'["\']', '', company)] = []
+                if brand not in self.company_to_brands[re.sub(r'["\']', '', company)]:
+                    self.company_to_brands[re.sub(r'["\']', '', company)].append(re.sub(r'["\']', '', brand.lower()))
 
 
 
@@ -269,43 +271,12 @@ Please be factual, cite specific examples when possible, and present both positi
 if __name__ == "__main__":
     # Initialize the analyzer
     API_KEY = "AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E"  # Replace with your actual key
-    CSV_FILE = "Test Files/UnFixedData.csv"  # Path to your CSV file
+    CSV_FILE = "Test Files/webscrape.csv"  # Path to your CSV file
 
-    # Create sample CSV if it doesn't exist
-    if not os.path.exists(CSV_FILE):
-        sample_data = """Company,Brand
-PepsiCo,Doritos
-PepsiCo,Lay's
-PepsiCo,Mountain Dew
-PepsiCo,Pepsi
-PepsiCo,Gatorade
-Mondelez,Oreo
-Mondelez,Cadbury
-Mondelez,Trident
-Procter & Gamble,Tide
-Procter & Gamble,Crest
-Procter & Gamble,Gillette"""
 
-        with open(CSV_FILE, 'w') as f:
-            f.write(sample_data)
-        print(f"Created sample CSV: {CSV_FILE}\n")
 
     try:
-        analyzer = EthicalBrandAnalyzer(
-            csv_file=CSV_FILE,
-            api_key=API_KEY
-        )
-
-        # print("=" * 70)
-        # print("🌍 ETHICAL CONSUMERISM ANALYZER")
-        # print("=" * 70)
-        # print("Discover where your money really goes when you buy from brands.\n")
-        #
-        # # Example analysis
-        # print("Example 1: Analyzing Doritos (a brand)")
-        # print("-" * 70)
-        #report = analyzer.analyze_brand("Doritos")
-        #print(report)
+        analyzer = BrandAnalysis(CompanyBrandFile=CSV_FILE, api_key=API_KEY )
 
         print("\n\n")
 
