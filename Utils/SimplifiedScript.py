@@ -4,19 +4,19 @@ import os
 from typing import Optional, Dict, List
 
 
-class EthicalBrandAnalyzer:
-    def __init__(self, csv_file: str, api_key: Optional[str] = None):
+class BrandAnalysis:
+    def __init__(self, CompanyBrandFile: str, api_key: Optional[str] = None):
 
         # Load the brand-company mapping from CSV
-        print(f"Loading brand data from {csv_file}...")
+        print(f"Loading brand data from {CompanyBrandFile}...")
         self.brand_to_company = {}  # {brand: company}
         self.company_to_brands = {}  # {company: [brands]}
 
-        self._load_csv(csv_file)
+        self._load_csv(CompanyBrandFile)
 
         print(f"Loaded {len(self.brand_to_company)} brands from {len(self.company_to_brands)} companies\n")
 
-        # Set up Google AI
+        # Set up Google AI for future query stuff
         if api_key:
             self.api_key = api_key
         else:
@@ -33,7 +33,7 @@ class EthicalBrandAnalyzer:
 
 
     def _load_csv(self, csv_file: str):
-        """Load brand-company relationships from CSV"""
+        # Preps the csv data to be parsed and gets it into our dictionaries
         with open(csv_file, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
 
@@ -44,7 +44,11 @@ class EthicalBrandAnalyzer:
                 company = row['Company'].strip()
                 brand = row['Brand'].strip()
 
+                # Clean data before adding !!
                 if not company or not brand:
+                    continue
+
+                if brand == "NO_DATA":
                     continue
 
                 # Store brand -> company mapping
@@ -61,12 +65,7 @@ class EthicalBrandAnalyzer:
     def _find_best_model(self) -> str:
         # Finds AI Model to use for query stuff
         # Try Gemini 2.0 Flash-Lite first (higher rate limits)
-        preferred_models = [
-            'gemini-2.0-flash-lite',
-            'models/gemini-2.0-flash-lite',
-            'gemini-1.5-flash',
-            'models/gemini-1.5-flash'
-        ]
+        preferred_models = ['gemini-2.0-flash-lite','models/gemini-2.0-flash-lite','gemini-1.5-flash','models/gemini-1.5-flash']
 
         try:
             available = [m.name for m in genai.list_models()
@@ -82,13 +81,12 @@ class EthicalBrandAnalyzer:
                 return available[0]
         except:
             pass
-
         return 'models/gemini-2.0-flash-lite'
 
 
 
     def get_parent_company(self, brand_or_company: str) -> Optional[tuple]:
-
+        # Gets parent company when given an input, used for lookups
         search_term = brand_or_company.lower()
 
         # Check if it's a brand
@@ -129,6 +127,24 @@ class EthicalBrandAnalyzer:
         return None
 
 
+    def get_graph_stats(self) -> str:
+        # Function to display STATISTICS about the graph
+        # For fun and for testing purposes
+
+
+        result = "=== GRAPH STATISTICS ===\n"
+        result += f"Total Companies: {len(self.company_to_brands.keys())}\n"
+        result += f"Total Brands: {len(self.brand_to_company.keys())}\n"
+
+        # Find company with most brands
+        if self.company_to_brands.keys():
+            max_brands = max(self.company_to_brands,key=lambda k: len(self.company_to_brands[k]))
+
+            result += f"\nLargest Portfolio: {max_brands} "
+
+        return result
+
+
 
     def analyze_company_donations(self, company_name: str) -> str:
         """
@@ -159,9 +175,7 @@ Please be factual, cite specific examples when possible, and present both positi
             return f"Error analyzing company: {e}"
 
     def analyze_brand(self, brand_or_company: str) -> str:
-        """
-        Main function: Analyze a brand or company's ethical profile
-        """
+        # AI analysis script
         # Find the parent company
         result_tuple = self.get_parent_company(brand_or_company)
 
@@ -174,11 +188,8 @@ Please be factual, cite specific examples when possible, and present both positi
         brand_labels = self.company_to_brands.get(company, [])
 
         # Build the report
-        result = "=" * 70 + "\n"
-        result += f"💰 ETHICAL MONEY TRAIL REPORT\n"
-        result += "=" * 70 + "\n\n"
 
-        result += f"📦 You searched for: {brand_or_company}\n"
+        result = f"📦 You searched for: {brand_or_company}\n"
 
         if is_brand:
             result += f"🏷️  Type: Brand\n"
@@ -220,30 +231,25 @@ Please be factual, cite specific examples when possible, and present both positi
         brand_labels = self.company_to_brands.get(company, [])
 
         # Build the report
-        result = "=" * 70 + "\n"
-        result += f"💰 ETHICAL MONEY TRAIL REPORT\n"
-        result += "=" * 70 + "\n\n"
-
-        result += f"📦 You searched for: {brand_or_company}\n"
         company, is_brand = result_tuple
+        # Brand
         if is_brand:
-            result += f"🏷️  Type: Brand\n"
-            result += f"🏢 Parent Company: {company}\n"
+            result = "Brand"
+            result += "," + brand_or_company
+            result += "," + company
 
             # Show sibling brands (other brands owned by same company)
             siblings = [b for b in brand_labels if b.lower() != brand_or_company.lower()]
             if siblings:
-                result += f"\n👥 Sibling Brands ({len(siblings)}):\n"
-                result += f"   When you buy {brand_or_company}, you're supporting the same company as:\n"
                 for sibling in sorted(siblings):
-                    result += f"   • {sibling}\n"
+                    result += "," + sibling
+        # Company
         else:
-            result += f"🏷️  Type: Company\n"
-            result += f"🏢 Company Name: {company}\n"
+            result = "Company"
+            result += "," + brand_or_company
             brands = self.company_to_brands.get(company, [])
-            result += f"🏢 {company} owns {len(brands)} brands:\n"
             for brand in sorted(brands):
-                result += f"   • {brand}\n"
+                result += "," + brand
 
         return result
 
@@ -263,7 +269,7 @@ Please be factual, cite specific examples when possible, and present both positi
 if __name__ == "__main__":
     # Initialize the analyzer
     API_KEY = "AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E"  # Replace with your actual key
-    CSV_FILE = "sample_input.csv"  # Path to your CSV file
+    CSV_FILE = "Test Files/UnFixedData.csv"  # Path to your CSV file
 
     # Create sample CSV if it doesn't exist
     if not os.path.exists(CSV_FILE):
@@ -311,6 +317,7 @@ Procter & Gamble,Gillette"""
 
         print("\n\n")
 
+        print(analyzer.get_graph_stats())
 
     except Exception as e:
         print(f"Error: {e}")
