@@ -4,3 +4,5 @@ networkx
 flask
 flask_cors
 typing
+google
+google.generativeai
