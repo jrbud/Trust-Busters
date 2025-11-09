@@ -1,7 +1,7 @@
 import csv
 import re
 import os
-from typing import Optional
+from typing import Optional, List
 import google.generativeai as genai
 from PIL import Image
 
@@ -145,6 +145,7 @@ class BrandAnalysis:
         resultTup = self.getParentCompany(brandOrCompany)
 
         if not resultTup:
+            return self.partialMatch(searchTerm=brandOrCompany)
             return f"Could not find '{brandOrCompany}' in the database."
 
         company, isBrand, matchedName = resultTup
@@ -173,6 +174,47 @@ class BrandAnalysis:
                 result += "," + brand
 
         return result
+
+    def partialMatch(self, searchTerm: str) -> List[str] | None:
+        # Partial match to get other possible options, useful for autofill/suggesstions
+        matches = []
+        searchTerm=searchTerm.lower()
+
+        # Product
+        for brand, products in self.brand2Products.items():
+            for product in products:
+                if searchTerm in product.lower():
+                    matches.append(product)
+
+        # Brand
+        for brand in self.brand2Company.keys():
+            if searchTerm in brand:
+                # Find original case brand name
+                realBrand = None
+                for company, brands in self.company2brands.items():
+                    for b in brands:
+                        if b.lower() == brand:
+                            realBrand = b
+                            break
+                    if realBrand:
+                        break
+                if realBrand:
+                    matches.append(realBrand)
+
+        # Company
+        for company in self.company2brands.keys():
+            if searchTerm in company.lower():
+                matches.append(company)
+
+        # Clean and remove duplicates
+        seen = set()
+        uniqueMatches = []
+        for match in matches:
+            if match not in seen:
+                seen.add(match)
+                uniqueMatches.append(match)
+
+        return uniqueMatches
 
 #                          Testing Functions !!                          #
 # -----------------------------------------------------------------------#
@@ -306,6 +348,10 @@ if __name__ == "__main__":
         print("\n\n")
 
         print(analyzer.getStatistics())
+
+        print(analyzer.partialMatch("Pep"))
+
+
 
 
 
