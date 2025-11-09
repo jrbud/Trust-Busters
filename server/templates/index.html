@@ -174,6 +174,10 @@
 </head>
 <body>
   <h1>TRUST BUSTER</h1>
+  <h2>Welcome to TrustBuster!</h2>
+  <p>Your very own tool to stop corporate monopolies and oligopolies from infiltrating your wallet!<br>
+  Enter your product, brand, or company, and we'll tell you where your money is really going!<br>
+  Don’t let your purchases be a roll of the die! Use TrustBusters before you buy! 🎲💵🎩</p>
   <p>Enter the company, brand, or product you want to BUST!</p>
 
   <div class="search-bar">
@@ -233,16 +237,29 @@
         return;
       }
 
-      let html = `<h2>Results for ${data.company.toUpperCase()}</h2>`;
+      let html = `<p>Results for ${data.company.toUpperCase()}</p>`;
 
       const brands = data.type === "company" ? data.children : data.sisters;
-      const owner = data.type === "company" ? data.company : data.parent;
+const owner = data.type === "company" ? data.company : data.parent;
 
-      html += `<p><strong>${data.company}</strong> is a <strong>${data.type}</strong> ${
-        data.type === "brand"
-          ? `owned by <strong>${data.parent}</strong> with ${brands.length} sister brand${brands.length !== 1 ? 's' : ''}`
-          : `that owns ${brands.length} brand${brands.length !== 1 ? 's' : ''}`
-      }.</p>`;
+if (data.type === "brand") {
+  html += `
+    <h2>${data.company.toUpperCase()} is a subsidiary of ${data.parent.toUpperCase()} with ${brands.length} sister brand${brands.length !== 1 ? 's' : ''}.</h2>
+  `;
+} else {
+  html += `
+    <h2>${data.company.toUpperCase()} is a company that owns ${brands.length} consumer brand${brands.length !== 1 ? 's' : ''}.</h2>
+  `;
+}
+
+html += `
+  <h4>${owner.toUpperCase()} Statistics:</h4>
+  <ul class="company-stats">
+    <li><strong>Market Cap:</strong> [data not available]</li>
+    <li><strong>Market Share:</strong> [data not available]</li>
+    <li><strong>Vertical Integration Index:</strong> [data not available]</li>
+  </ul>
+`;
 
       if (useEthics) {
         try {

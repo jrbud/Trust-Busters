@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from Utils.SimplifiedScript import BrandAnalysis
 
-analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv", "webscraping/brand_products2.csv",
+analyzer = BrandAnalysis("webscraping/FinalCleanedCompanyBrand.csv", "webscraping/FinalCleanedBrandProducts.csv","webscraping/FinalCleanedCompanyData.csv",
                          APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
 
 app = Flask(__name__)
@@ -53,12 +53,10 @@ def get_company_info():
 @app.route('/ai-check',methods=['GET'])
 def ai_check():
     company = request.args.get('name').lower()
-    analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv","webscraping/brand_products2.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
     return analyzer.analyzeCompanyDonations(company)
 
 def parse_lookup(company):
     print("PARSING COMPANY")
-    analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv","webscraping/brand_products2.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
     if not analyzer:
         print("analyzer found nothing")
         return
@@ -67,6 +65,11 @@ def parse_lookup(company):
     children = sisters = []
     out = {"type":data.pop(0).lower(),"company": company, "parent": parent, "children": children, "sisters": sisters, "len":0}
     out["company"] = data.pop(0)
+    statistics = analyzer.getData(out["company"]).split(",")
+    out["networth"] = statistics[0]
+    out["market-share"] = statistics[1]
+    out["vii"] = statistics[2]
+
     print(out["type"])
     print("HIIII")
     print(out)
