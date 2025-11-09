@@ -40,9 +40,8 @@ def get_company_info():
         return jsonify({"error": "Missing company name"}), 400
     # data = next((v for k, v in sample_company.items() if k.lower() == company), None)
     # print(data)
-    print(sample_company["BrandX"])
+    # print(sample_company["BrandX"])
     data = parse_lookup(company)
-    print(sample_company["BrandX"])
     print(data)
     if not data:
         return jsonify({"error": f"No data found for '{company}'"}), 404
@@ -57,7 +56,7 @@ def parse_lookup(company):
         print("analyzer found nothing")
         return
     data = analyzer.quick_lookup(company).split(",")
-    company = parent = children = sisters =  ""
+    company = parent =  ""
     children = sisters = []
     out = {"company": company, "parent": parent, "children": children, "sisters": sisters}
 
