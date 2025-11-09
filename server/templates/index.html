@@ -8,14 +8,14 @@
   <style>
     @font-face {
       font-family: 'Monopoly';
-      src: url('/static/monopoly.ttf') format('truetype');
+      src: url('../static/monopoly.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
 
     @font-face {
       font-family: 'Copperplate Gothic';
-      src: url('/static/copperplate.ttf') format('truetype');
+      src: url('../static/copperplate.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -49,6 +49,12 @@
       align-items: center;
       gap: 12px;
       margin-top: 1em;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .input-wrapper {
@@ -167,21 +173,22 @@
   </style>
 </head>
 <body>
-  <h1>TRUST BUSTING!!!!!</h1>
+  <h1>TRUST BUSTER</h1>
   <p>Enter the company, brand, or product you want to BUST!</p>
 
   <div class="search-bar">
-    <div class="input-wrapper">
-      <input type="text" id="companyInput" placeholder="Enter company name" oninput="getSuggestions()" />
-      <ul id="suggestions" class="suggestions"></ul>
+    <div class="input-row">
+      <div class="input-wrapper">
+        <input type="text" id="companyInput" placeholder="Enter company name" oninput="getSuggestions()" />
+        <ul id="suggestions" class="suggestions"></ul>
+      </div>
+      <button onclick="searchCompany()">GO</button>
     </div>
 
     <label>
       <input type="checkbox" id="ethicsCheckbox" />
       Analyze ethical concerns with AI
     </label>
-
-    <button onclick="searchCompany()">GO</button>
   </div>
 
   <div id="results"></div>
@@ -247,22 +254,35 @@
         }
       }
 
-      html += `
-        <div class="deed-grid">
-          ${brands.map(b => {
-            const bgColor = getRandomColor();
-            return `
-              <div class="deed-card">
-                <h3 style="background-color: ${bgColor};">${b.toUpperCase()}</h3>
-                <p>Owned by <strong>${owner}</strong></p>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
+      html += `<div class="deed-grid">`;
+
+brands.forEach((b, i) => {
+  const bgColor = getRandomColor();
+  html += `
+    <div class="deed-card" style="animation-delay: ${i * 0.2}s;">
+      <h3 style="background-color: ${bgColor};">${b.toUpperCase()}</h3>
+      <div class="deed-body">
+        <p class="deed-owner-label">Owned by</p>
+        <p class="deed-owner-name">${owner.toUpperCase()}</p>
+      </div>
+    </div>
+  `;
+});
+
+html += `</div>`;
 
       document.getElementById('results').innerHTML = html;
     }
+     document.addEventListener('click', function (event) {
+      const inputWrapper = document.querySelector('.input-wrapper');
+      const suggestionsBox = document.getElementById('suggestions');
+      if (!inputWrapper.contains(event.target)) {
+        suggestionsBox.innerHTML = '';
+      }
+    });
+
+    // Re-show suggestions only when typing
+    document.get
   </script>
 </body>
 </html>

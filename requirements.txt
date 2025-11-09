@@ -7,3 +7,4 @@ typing
 google
 google.generativeai
 pillow
+gunicorn

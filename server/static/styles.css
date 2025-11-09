@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'Monopoly';
-  src: url('../static/monopoly.ttf') format('truetype');
+  src: url('monopoly.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Copperplate Gothic';
-  src: url('../static/copperplate.ttf') format('truetype');
+  src: url('copperplate.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -110,6 +110,16 @@ ul.suggestions li:hover {
   margin: 2em auto;
   max-width: 1200px;
 }
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 
 .deed-card {
   background-color: #fff;
@@ -125,6 +135,8 @@ ul.suggestions li:hover {
   align-items: center;
   overflow: hidden;
   padding: 0;
+  animation: slideUp 0.5s ease forwards;
+  opacity: 0;
 }
 
 .deed-card h3 {
@@ -141,15 +153,38 @@ ul.suggestions li:hover {
   text-transform: uppercase;
   font-family: 'Copperplate Gothic', 'Copperplate', serif;
 }
-
-.deed-card p {
+.deed-body {
   flex: 4;
-  margin: 0;
-  width: 100%;
-  font-size: 0.9em;
-  padding: 1em 0.5em;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;  /* aligns content to the top vertically */
+  align-items: center;          /* centers content horizontally */
+  width: 100%;
+  padding: 1em 0.5em;
   text-align: center;
 }
+
+.deed-owner-label {
+  font-size: 0.9em;
+  margin: 0;
+  color: #333;
+}
+
+.deed-owner-name {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0.2em 0 0;
+  color: #000;
+}
+.deed-card p {
+    flex: 4;
+    margin: 0;
+    width: 100%;
+    font-size: 0.9em;
+    padding: 1em 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+

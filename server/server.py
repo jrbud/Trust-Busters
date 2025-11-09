@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from Utils.SimplifiedScript import BrandAnalysis
 
+analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv", "webscraping/brand_products2.csv",
+                         APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
 
 app = Flask(__name__)
 CORS(app)
@@ -71,7 +73,7 @@ def parse_lookup(company):
 
     if out["type"] == "brand":
         print("brand")
-        out["type"]
+
         parent = data.pop(0)
         out["parent"] = parent
         out["sisters"] = data
@@ -79,7 +81,7 @@ def parse_lookup(company):
         print(out)
         return out
     elif out["type"] == "company":
-        out["type"]
+
         out["children"] = data
         out["len"] = len(data)
         print("company")
@@ -89,11 +91,12 @@ def parse_lookup(company):
 @app.route('/api/suggest', methods=['GET'])
 def suggest_companies():
     query = request.args.get('q', '').lower()
+
     if not query:
         return jsonify([])
 
-
-    matches = [name for name in sample_company if query in name.lower()]
+    suggestions = analyzer.partialMatch(query)
+    matches = [name for name in suggestions if name.lower().startswith(query)]
     return jsonify(matches[:10])
 
 if __name__ == '__main__':
