@@ -6,3 +6,4 @@ flask_cors
 typing
 google
 google.generativeai
+pillow

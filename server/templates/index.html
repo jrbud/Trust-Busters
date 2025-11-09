@@ -9,21 +9,21 @@
       font-family: Arial, sans-serif;
       margin: 2em;
       text-align: center;
-      background-color: #121212;
-      color: #f0f0f0;
+      background-color: #BFDBAE;
+      color: #000000;
     }
 
     h1 {
       margin-bottom: 0.2em;
-      color: #ffffff;
+      color: #000000;
     }
 
     .search-bar {
-      display: inline-flex;
-      align-items: flex-start;
-      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       margin-top: 1em;
-      position: relative;
     }
 
     .input-wrapper {
@@ -31,29 +31,32 @@
       width: 300px;
     }
 
-    input {
+    input[type="text"] {
       padding: 8px;
       font-size: 1em;
       width: 100%;
       box-sizing: border-box;
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-      border: 1px solid #444;
-      border-radius: 4px;
+      background-color: #D7BAAA;
+      color: #000000;
+      border: 3px solid #444;
     }
 
     button {
       padding: 8px 16px;
       font-size: 1em;
-      background-color: #333;
-      color: #f0f0f0;
-      border: 1px solid #555;
-      border-radius: 4px;
+      background-color: #D7BAAA;
+      color: #e40c03;
+      border: 3px solid #e40c03;
       cursor: pointer;
     }
 
     button:hover {
       background-color: #444;
+    }
+
+    label {
+      font-size: 0.95em;
+      color: #000000;
     }
 
     ul.suggestions {
@@ -70,7 +73,6 @@
       z-index: 10;
       max-height: 200px;
       overflow-y: auto;
-      border-radius: 4px;
     }
 
     ul.suggestions li {
@@ -83,37 +85,60 @@
       background-color: #333;
     }
 
-    table {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 80%;
-      margin: 1em auto;
-      border: 1px solid #444;
-      border-radius: 10px;
-      overflow: hidden;
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-    }
-
-    th, td {
-      border: 1px solid #444;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #2a2a2a;
-    }
-
     #results {
       margin-top: 2em;
     }
 
-    .section-heading {
-      text-align: left;
-      margin-left: 10%;
-      margin-top: 2em;
-      color: #ffffff;
+    .deed-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 32px 40px;
+      justify-content: center;
+      margin: 2em auto;
+      max-width: 1200px;
+    }
+
+    .deed-card {
+      background-color: #fff;
+      color: #000;
+      border: 4px solid #000000;
+      outline: 4px solid #ffffff;
+      width: 180px;
+      height: 270px;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 2px 8px rgba(63, 69, 81, 0.16);
+      display: flex;
+      flex-direction: column;
+      justify-content: stretch;
+      align-items: center;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .deed-card h3 {
+      flex: 1;
+      margin: 0;
+      width: 100%;
+      font-size: 1.1em;
+      border-bottom: 2px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5em;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .deed-card p {
+      flex: 4;
+      margin: 0;
+      width: 100%;
+      font-size: 0.9em;
+      padding: 1em 0.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
   </style>
 </head>
@@ -126,12 +151,27 @@
       <input type="text" id="companyInput" placeholder="Enter company name" oninput="getSuggestions()" />
       <ul id="suggestions" class="suggestions"></ul>
     </div>
-    <button onclick="searchCompany()">Search</button>
+
+    <label>
+      <input type="checkbox" id="ethicsCheckbox" />
+      Analyze ethical concerns with AI
+    </label>
+
+    <button onclick="searchCompany()">GO</button>
   </div>
 
   <div id="results"></div>
 
   <script>
+    const colors = [
+      "#e40c03", "#ffeb00", "#00ae41", "#0068b3",
+      "#94481a", "#b9e3f7", "#d62f8c", "#ef8c00"
+    ];
+
+    function getRandomColor() {
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
     async function getSuggestions() {
       const input = document.getElementById('companyInput').value;
       if (input.length < 1) {
@@ -152,6 +192,10 @@
 
     async function searchCompany() {
       const name = document.getElementById('companyInput').value;
+      const useEthics = document.getElementById('ethicsCheckbox').checked;
+
+      console.log("Ethical analysis selected:", useEthics);
+
       const res = await fetch(`/api/company?name=${encodeURIComponent(name)}`);
       const data = await res.json();
 
@@ -160,14 +204,37 @@
         return;
       }
 
-      let html = `
-        <h2>Results for "${data.company}"</h2>
-        <p><strong>Parent company:</strong> ${data.parent}</p>
-        <h3 class="section-heading">Child Companies</h3>
-        <table><tr><th>Name</th></tr>${data.children.map(c => `<tr><td>${c}</td></tr>`).join('')}</table>
-        <h3 class="section-heading">Sister Brands</h3>
-        <table><tr><th>Name</th></tr>${data.sisters.map(s => `<tr><td>${s}</td></tr>`).join('')}</table>
+      let html = `<h2>Results for "${data.company}"</h2>`;
+
+      const brands = data.type === "company" ? data.children : data.sisters;
+      const owner = data.type === "company" ? data.company : data.parent;
+
+      html += `
+        <p><strong>${data.company}</strong> is a <strong>${data.type}</strong> ${data.type === "brand"
+          ? `owned by <strong>${data.parent}</strong> with ${brands.length} sister brand${brands.length !== 1 ? 's' : ''}`
+          : `that owns ${brands.length} brand${brands.length !== 1 ? 's' : ''}`}.</p>
+        <div class="deed-grid">
+          ${brands.map(b => {
+            const bgColor = getRandomColor();
+            return `
+              <div class="deed-card">
+                <h3 style="background-color: ${bgColor};">${b.toUpperCase()}</h3>
+                <p>Owned by <strong>${owner}</strong></p>
+              </div>
+            `;
+          }).join('')}
+        </div>
       `;
+              if (useEthics) {
+    try {
+      const ethicsRes = await fetch(`/ai-check?name=${encodeURIComponent(data.parent)}`);
+      const ethicsText = await ethicsRes.text();
+      html += `<p><em>${ethicsText}</em></p>`;
+    } catch (error) {
+      html += `<p><em>AI ethical analysis failed to load.</em></p>`;
+    }
+  }
+
       document.getElementById('results').innerHTML = html;
     }
   </script>

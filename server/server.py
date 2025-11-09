@@ -48,33 +48,40 @@ def get_company_info():
 
     return jsonify(data)
 
+@app.route('/ai-check',methods=['GET'])
+def ai_check():
+    company = request.args.get('name').lower()
+    analyzer = BrandAnalysis("Utils/Test Files/webscrape.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
+    return analyzer.analyzeCompanyDonations(company)
 
 def parse_lookup(company):
     print("PARSING COMPANY")
-    analyzer = BrandAnalysis("Utils/Test Files/webscrape.csv", api_key="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
+    analyzer = BrandAnalysis("Utils/Test Files/webscrape.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
     if not analyzer:
         print("analyzer found nothing")
         return
-    data = analyzer.quick_lookup(company).split(",")
+    data = analyzer.quickLookup(company).split(",")
     company = parent =  ""
     children = sisters = []
-    out = {"company": company, "parent": parent, "children": children, "sisters": sisters}
-
-    type = data.pop(0)
+    out = {"type":data.pop(0).lower(),"company": company, "parent": parent, "children": children, "sisters": sisters, "len":0}
     out["company"] = data.pop(0)
+    print(out["type"])
     print("HIIII")
     print(out)
-    print(type)
 
-    if type == "Brand":
+    if out["type"] == "brand":
         print("brand")
+        out["type"]
         parent = data.pop(0)
         out["parent"] = parent
         out["sisters"] = data
+        out["len"] = len(data)
         print(out)
         return out
-    elif type == "Company":
+    elif out["type"] == "company":
+        out["type"]
         out["children"] = data
+        out["len"] = len(data)
         print("company")
         print(out)
         return out
