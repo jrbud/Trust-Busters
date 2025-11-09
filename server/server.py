@@ -51,12 +51,12 @@ def get_company_info():
 @app.route('/ai-check',methods=['GET'])
 def ai_check():
     company = request.args.get('name').lower()
-    analyzer = BrandAnalysis("Utils/Test Files/webscrape.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
+    analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv","webscraping/brand_products2.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
     return analyzer.analyzeCompanyDonations(company)
 
 def parse_lookup(company):
     print("PARSING COMPANY")
-    analyzer = BrandAnalysis("Utils/Test Files/webscrape.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
+    analyzer = BrandAnalysis("webscraping/company_brands_scrubbed2.csv","webscraping/brand_products2.csv", APIKEY="AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E")
     if not analyzer:
         print("analyzer found nothing")
         return
@@ -91,6 +91,7 @@ def suggest_companies():
     query = request.args.get('q', '').lower()
     if not query:
         return jsonify([])
+
 
     matches = [name for name in sample_company if query in name.lower()]
     return jsonify(matches[:10])
