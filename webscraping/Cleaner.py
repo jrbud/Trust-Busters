@@ -125,7 +125,7 @@ def clean_csv(input_file, output_file=None):
 
 if __name__ == "__main__":
     # Replace with your input filename
-    input_filename = "brands_20251108_173221.csv"
+    input_filename = "Old Scraped Files/brands_20251108_173221.csv"
 
     print("-" * 50)
 

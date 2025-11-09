@@ -7,17 +7,20 @@ from PIL import Image
 
 
 class BrandAnalysis:
-    def __init__(self, companyBrandFile: str, brandProductFile: Optional[str]=None, APIKEY: Optional[str] = None):
+    def __init__(self, companyBrandFile: str, brandProductFile: Optional[str]=None, companyDataFile:Optional[str]=None, APIKEY: Optional[str] = None):
         # Load the mappings from CSV
         self.brand2Company = {}
         self.company2brands = {}
         self.brand2Products = {}
+        self.companyData = {}
 
         self.loadCSV(companyBrandFile)
 
         if brandProductFile:
             print(f"Loading product data from {brandProductFile}...")
             self.loadProductsCSV(brandProductFile)
+
+        self.loadDataCSV(companyDataFile)
 
         # Set up Google AI for future query stuff
         if APIKEY is not None:
@@ -34,6 +37,8 @@ class BrandAnalysis:
         self.vision_model = self.model
 
 
+    #                          Loading Data                                  #
+    # -----------------------------------------------------------------------#
     def loadCSV(self, filename: str):
         # Preps the csv data to be parsed and gets it into our dictionaries
         with open(filename, 'r', encoding='utf-8') as f:
@@ -80,6 +85,32 @@ class BrandAnalysis:
                     self.brand2Products[brand] = []
                 if product not in self.brand2Products[brand]:
                     self.brand2Products[brand].append(product)
+
+    def loadDataCSV(self, filename: str):
+        """Load company financial and structural data from CSV"""
+        with open(filename, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+
+            requiredColumns = ['CompanyName', 'Net Worth (Market Cap)', 'Market Share','Vertical Integration Index', 'Sources']
+
+            if not all(col in reader.fieldnames for col in requiredColumns):
+                raise ValueError(f"Company data CSV must have columns: {', '.join(requiredColumns)}")
+
+            for row in reader:
+                company = row['CompanyName'].strip()
+
+                if not company:
+                    continue
+
+                # Store company data
+                self.companyData[company] = {
+                    'net_worth': row['Net Worth (Market Cap)'].strip(),
+                    'market_share': row['Market Share'].strip(),
+                    'vertical_integration': row['Vertical Integration Index'].strip(),
+                    'sources': row['Sources'].strip()
+                }
+
+    # -----------------------------------------------------------------------#
 
     def getParentCompany(self, brandOrCompany: str) -> Optional[tuple]:
         # Gets parent company when given an input, used for lookups
@@ -145,8 +176,7 @@ class BrandAnalysis:
         resultTup = self.getParentCompany(brandOrCompany)
 
         if not resultTup:
-            return self.partialMatch(searchTerm=brandOrCompany)
-            return f"Could not find '{brandOrCompany}' in the database."
+             f"Could not find '{brandOrCompany}' in the database."
 
         company, isBrand, matchedName = resultTup
 
@@ -172,6 +202,27 @@ class BrandAnalysis:
             brands = self.company2brands.get(company, [])
             for brand in sorted(brands):
                 result += "," + brand
+
+        return result
+
+    def getData(self, brandOrCompany: str) -> str:
+        company = analyzer.getParentCompany(brandOrCompany)
+        company = company[0]
+        result = ""
+        if company in self.companyData:
+            data = self.companyData[company]
+
+            if data['net_worth']:
+                result += data['net_worth']
+                result += ","
+            if data['market_share']:
+                result += data['market_share']
+                result += ","
+            if data['vertical_integration']:
+                result += data['vertical_integration']
+                result += ","
+            if data['sources']:
+                result += data['sources']
 
         return result
 
@@ -312,7 +363,10 @@ class BrandAnalysis:
         4. Labor & Ethics Issues: Any known issues with labor practices, environmental damage, or ethical controversies where money is involved?    
         5. Overall Ethical Assessment: A brief summary of whether consumers should be aware of where their money goes when buying from {company_name}.
 
-        Please be factual, cite specific examples when possible, and present both positive and negative information. If certain information is not publicly available, please state that clearly."""
+        Please be factual, cite specific examples when possible, and present both positive and negative information. If certain information is not publicly available, please state that clearly.
+        Please adhere to a 140 word minimum and be concise and clear using the above 5 bullet points. Please provide the output in HTML formatting
+
+        Please do not mention being an ethical consumerism researcher. Please present the information with just the facts and using limited casual tonage"""
 
         try:
             response = self.model.generate_content(prompt,generation_config={'temperature': 0.3,  'max_output_tokens': 2048,})
@@ -328,12 +382,13 @@ class BrandAnalysis:
 if __name__ == "__main__":
     # Initialize the analyzer
     API_KEY = "AIzaSyB8vI7n3836w4dWUvfxGviEokYhUe9ZV5E"
-    CSVFILE = "../webscraping/company_brands_scrubbed2.csv"
-    ProductCSVFILE = "../webscraping/brand_products2.csv"
+    CSVFILE = "../webscraping/FinalCleanedCompanyBrand.csv"
+    ProductCSVFILE = "../webscraping/FinalCleanedBrandProducts.csv"
+    DataCSVFILE = "../webscraping/FinalCleanedCompanyData.csv"
 
 
     try:
-        analyzer = BrandAnalysis(companyBrandFile=CSVFILE,brandProductFile=ProductCSVFILE, APIKEY=API_KEY )
+        analyzer = BrandAnalysis(companyBrandFile=CSVFILE,brandProductFile=ProductCSVFILE, companyDataFile=DataCSVFILE,APIKEY=API_KEY )
 
         print("\n\n")
 
@@ -347,9 +402,9 @@ if __name__ == "__main__":
 
         print("\n\n")
 
-        print(analyzer.getStatistics())
+        print(analyzer.getData("PepsiCo"))
 
-        print(analyzer.partialMatch("Pep"))
+
 
 
 
